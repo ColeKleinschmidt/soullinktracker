@@ -1,16 +1,30 @@
 #!/usr/bin/env python3
-"""Real-time Soul Link tracker using websockets."""
+"""Real-time Soul Link tracker using websockets with a simple GUI."""
 
 import asyncio
 import json
 import os
+import sys
 import time
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 import websockets
+import tkinter as tk
+from tkinter import ttk, messagebox
 
 TEAM_FILE = "team_data.json"
 LOG_FILE = "soul_link_log.json"
+GAMES = [
+    "Diamond",
+    "Pearl",
+    "Platinum",
+    "HeartGold",
+    "SoulSilver",
+    "Black",
+    "White",
+    "Black 2",
+    "White 2",
+]
 
 
 def read_team() -> List[Dict]:
@@ -35,7 +49,9 @@ def print_team(team: List[Dict], title: str) -> None:
         hp = mon.get("hp")
         max_hp = mon.get("max_hp")
         fainted = mon.get("fainted")
-        print(f"{idx}. species={species} level={level} hp={hp}/{max_hp} fainted={fainted}")
+        print(
+            f"{idx}. species={species} level={level} hp={hp}/{max_hp} fainted={fainted}"
+        )
 
 
 def apply_soul_link(our_team: List[Dict], other_team: List[Dict]) -> None:
@@ -78,14 +94,58 @@ async def run_soul_link(uri: str) -> None:
             await asyncio.sleep(2)
 
 
+def get_user_config() -> Tuple[str, str]:
+    """Display a simple Tkinter dialog to get connection code and game."""
+    result: Tuple[str, str] = ("", "")
+
+    root = tk.Tk()
+    root.title("Soul Link Setup")
+
+    tk.Label(root, text="Connection Code (5 digits):").grid(row=0, column=0, sticky="w")
+    code_var = tk.StringVar()
+    tk.Entry(root, textvariable=code_var).grid(row=0, column=1, padx=5, pady=5)
+
+    tk.Label(root, text="Game:").grid(row=1, column=0, sticky="w")
+    game_var = tk.StringVar(value=GAMES[0])
+    ttk.Combobox(root, textvariable=game_var, values=GAMES, state="readonly").grid(
+        row=1, column=1, padx=5, pady=5
+    )
+
+    def start():
+        code = code_var.get()
+        if not code.isdigit() or len(code) != 5:
+            messagebox.showerror("Error", "Connection code must be exactly 5 digits.")
+            return
+        nonlocal result
+        result = (code, game_var.get())
+        root.destroy()
+
+    tk.Button(root, text="Start", command=start).grid(row=2, column=0, columnspan=2, pady=10)
+
+    root.mainloop()
+    return result
+
+
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(description="Soul Link WebSocket client")
-    parser.add_argument("url", help="WebSocket server URL, e.g. ws://localhost:8765")
+    parser.add_argument(
+        "--url",
+        default="ws://localhost:8765",
+        help="WebSocket server base URL",
+    )
     args = parser.parse_args()
 
+    code, game = get_user_config()
+    if not code:
+        print("No connection code provided, exiting.")
+        sys.exit(0)
+
+    url = args.url.rstrip("/") + "/" + code
+    print(f"Connecting to {url} for {game}...")
+
     try:
-        asyncio.run(run_soul_link(args.url))
+        asyncio.run(run_soul_link(url))
     except KeyboardInterrupt:
         print("Exiting...")
