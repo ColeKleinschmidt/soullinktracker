@@ -16,3 +16,16 @@ DeSmuME and sharing it with a partner.
 
 Run `team_export.lua` through DeSmuME's Lua scripting interface and execute
 `soul_link.py` while playing to sync your party with your partner.
+
+## Building a Windows executable
+
+To distribute the tracker as a standalone `.exe`, install [PyInstaller]
+(`pip install pyinstaller`) and run:
+
+```bash
+pyinstaller --onefile soul_link.py
+```
+
+The generated executable will be placed in the `dist/` folder as
+`soul_link.exe`. Players should still load `team_export.lua` in DeSmuME to
+select the game and export party data.
