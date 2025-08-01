@@ -7,6 +7,10 @@ This repository contains utilities for reading Pokémon party data from DeSmuME 
 
 Run `team_export.lua` through DeSmuME's Lua scripting interface and execute `soul_link.py` while playing to sync your party with your partner.
 
+## Database integration
+
+`soul_link.py` also pushes the latest party and PC data to a MongoDB database. Party Pokémon are stored in the `Party` collection and PC Pokémon in the `PC` collection of the `Pokemon` database using the provided connection string.
+
 ## Building a Windows executable
 
 To distribute the tracker as a standalone `.exe`, install [PyInstaller] (`pip install pyinstaller`) and run:
