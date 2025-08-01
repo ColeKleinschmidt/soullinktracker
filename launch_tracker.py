@@ -82,6 +82,7 @@ if __name__ == "__main__":
     root = tk.Tk()
     root.title("Pokémon Game Selector")
     root.resizable(False, False)
+    root.configure(bg="#f8f8f8")
 
     style = ttk.Style()
     try:
@@ -90,22 +91,35 @@ if __name__ == "__main__":
         pass
     style.configure("TLabel", font=("Segoe UI", 11))
     style.configure("TButton", font=("Segoe UI", 10))
+    style.configure("Card.TFrame", background="#f8f8f8")
 
-    frame = ttk.Frame(root, padding=20)
+    frame = ttk.Frame(root, padding=20, style="Card.TFrame")
     frame.pack()
 
-    ttk.Label(frame, text="Select a Pokémon ROM:").grid(row=0, column=0, pady=(0, 10))
+    canvas = tk.Canvas(frame, width=100, height=100, highlightthickness=0)
+    canvas.grid(row=0, column=0, pady=(0, 10))
+    canvas.create_arc(10, 10, 90, 90, start=0, extent=180, fill="#ff0000", outline="black")
+    canvas.create_arc(10, 10, 90, 90, start=180, extent=180, fill="white", outline="black")
+    canvas.create_oval(35, 35, 65, 65, fill="white", outline="black")
+    canvas.create_oval(43, 43, 57, 57, fill="black", outline="black")
+
+    ttk.Label(frame, text="Select a Pokémon ROM:").grid(row=1, column=0, pady=(0, 10))
 
     game_var = tk.StringVar()
     game_combo = ttk.Combobox(
         frame, textvariable=game_var, values=sorted(ROMS.keys()), state="readonly"
     )
-    game_combo.grid(row=1, column=0, pady=(0, 10))
+    game_combo.grid(row=2, column=0, pady=(0, 10))
     if ROMS:
         game_var.set(sorted(ROMS.keys())[0])
 
     ttk.Button(frame, text="Launch Tracker", command=launch_tracker).grid(
-        row=2, column=0, pady=(0, 10)
+        row=3, column=0, pady=(0, 10)
     )
+
+    root.update_idletasks()
+    width = root.winfo_width()
+    height = root.winfo_height()
+    root.geometry(f"{width * 2}x{height * 2}")
 
     root.mainloop()
