@@ -11,9 +11,27 @@ from typing import List, Dict, Tuple
 import websockets
 import tkinter as tk
 from tkinter import ttk, messagebox
+from pymongo import MongoClient
 
 TEAM_FILE = "team_data.json"
+PC_FILE = "pc_data.json"
 LOG_FILE = "soul_link_log.json"
+MONGO_URI = (
+    "mongodb+srv://kleinschmidtcole:tWJvDpWJNiC8acAX@"
+    "soullinktracker.v1n8usf.mongodb.net/"
+)
+
+# Initialize MongoDB client and collections
+try:
+    _mongo_client = MongoClient(MONGO_URI)
+    _db = _mongo_client["Pokemon"]
+    _pc_collection = _db["PC"]
+    _party_collection = _db["Party"]
+except Exception as _e:  # pragma: no cover - best effort to connect
+    print(f"MongoDB connection failed: {_e}")
+    _mongo_client = None
+    _pc_collection = None
+    _party_collection = None
 GAMES = [
     "Diamond",
     "Pearl",
@@ -33,6 +51,17 @@ def read_team() -> List[Dict]:
         return []
     try:
         with open(TEAM_FILE, "r") as f:
+            return json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return []
+
+
+def read_pc() -> List[Dict]:
+    """Read PC data from PC_FILE."""
+    if not os.path.exists(PC_FILE):
+        return []
+    try:
+        with open(PC_FILE, "r") as f:
             return json.load(f)
     except (OSError, json.JSONDecodeError):
         return []
@@ -72,12 +101,28 @@ def append_log(history: List[Dict], our_team: List[Dict], other_team: List[Dict]
         json.dump(history, f, indent=2)
 
 
+def update_database(pc: List[Dict], party: List[Dict]) -> None:
+    """Persist PC and party data to MongoDB."""
+    if _mongo_client is None:
+        return
+    if _pc_collection is not None:
+        _pc_collection.delete_many({})
+        if pc:
+            _pc_collection.insert_many(pc)
+    if _party_collection is not None:
+        _party_collection.delete_many({})
+        if party:
+            _party_collection.insert_many(party)
+
+
 async def run_soul_link(uri: str) -> None:
     history: List[Dict] = []
     async with websockets.connect(uri) as ws:
         other_team: List[Dict] = []
         while True:
             our_team = read_team()
+            pc_data = read_pc()
+            update_database(pc_data, our_team)
             await ws.send(json.dumps(our_team))
             try:
                 msg = await asyncio.wait_for(ws.recv(), timeout=1)
