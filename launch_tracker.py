@@ -45,9 +45,9 @@ def launch_tracker() -> None:
         messagebox.showerror("Error", f"Failed to write config.txt: {exc}")
         return
 
-    desmume = os.path.normpath(os.path.join(BASE_DIR, "desmume.exe"))
-    lua_script = os.path.normpath(os.path.join(BASE_DIR, "team_export.lua"))
-    rom_path = os.path.normpath(rom_path)
+    desmume = os.path.normpath(os.path.join(ROOT_DIR, "desmume.exe"))
+    lua_script = os.path.normpath(os.path.join("SoulLinkTracker", "team_export.lua"))
+    rom_path = os.path.normpath(os.path.relpath(rom_path, ROOT_DIR))
 
     creationflags = 0
     if os.name == "nt":
@@ -56,7 +56,7 @@ def launch_tracker() -> None:
     try:
         subprocess.Popen(
             [desmume, f"--lua={lua_script}", rom_path],
-            cwd=BASE_DIR,
+            cwd=ROOT_DIR,
             creationflags=creationflags,
         )
     except OSError as exc:
@@ -67,7 +67,8 @@ def launch_tracker() -> None:
 
 if __name__ == "__main__":
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    ROM_DIR = os.path.join(BASE_DIR, "Roms")
+    ROOT_DIR = os.path.dirname(BASE_DIR)
+    ROM_DIR = os.path.join(ROOT_DIR, "Roms")
     ROMS = available_roms(ROM_DIR)
 
     if os.name == "nt":  # best effort to hide console window
