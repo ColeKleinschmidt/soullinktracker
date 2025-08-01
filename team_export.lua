@@ -48,7 +48,8 @@ for i, name in ipairs(game_list) do
     print(string.format("%d) %s", i, name))
 end
 io.write("> ")
-local choice = tonumber(io.read()) or 1
+local input = io.read()
+local choice = tonumber(input) or 1
 local selected = GAME_CONFIGS[game_list[choice]] or GAME_CONFIGS[game_list[1]]
 
 local PARTY_START = selected.PARTY_START
