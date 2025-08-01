@@ -45,8 +45,9 @@ def launch_tracker() -> None:
         messagebox.showerror("Error", f"Failed to write config.txt: {exc}")
         return
 
-    desmume = os.path.join(BASE_DIR, "desmume.exe")
-    lua_script = os.path.join(BASE_DIR, "team_export.lua")
+    desmume = os.path.normpath(os.path.join(BASE_DIR, "desmume.exe"))
+    lua_script = os.path.normpath(os.path.join(BASE_DIR, "team_export.lua"))
+    rom_path = os.path.normpath(rom_path)
 
     creationflags = 0
     if os.name == "nt":
@@ -54,7 +55,7 @@ def launch_tracker() -> None:
 
     try:
         subprocess.Popen(
-            [desmume, rom_path, f"--lua={lua_script}"],
+            [desmume, f"--lua={lua_script}", rom_path],
             cwd=BASE_DIR,
             creationflags=creationflags,
         )
