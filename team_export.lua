@@ -40,7 +40,7 @@ local NUM_SLOTS = 6 -- maximum party size
 -- Determine which game is running based on config.txt
 local selected
 do
-    local file = io.open("config.txt", "r")
+    local file = io.open("SoulLinkTracker/config.txt", "r")
     local game_name = file and file:read("*l")
     if file then file:close() end
     if game_name and GAME_CONFIGS[game_name] then
