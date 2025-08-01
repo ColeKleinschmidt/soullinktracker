@@ -37,20 +37,18 @@ local GAME_CONFIGS = {
 
 local NUM_SLOTS = 6 -- maximum party size
 
--- Ask the user which game is running
-print("Select your game:")
-local game_list = {}
-for name, _ in pairs(GAME_CONFIGS) do
-    game_list[#game_list + 1] = name
+-- Determine which game is running based on config.txt
+local selected
+do
+    local file = io.open("config.txt", "r")
+    local game_name = file and file:read("*l")
+    if file then file:close() end
+    if game_name and GAME_CONFIGS[game_name] then
+        selected = GAME_CONFIGS[game_name]
+    else
+        selected = GAME_CONFIGS["Diamond/Pearl"]
+    end
 end
-table.sort(game_list)
-for i, name in ipairs(game_list) do
-    print(string.format("%d) %s", i, name))
-end
-io.write("> ")
-local input = io.read()
-local choice = tonumber(input) or 1
-local selected = GAME_CONFIGS[game_list[choice]] or GAME_CONFIGS[game_list[1]]
 
 local PARTY_START = selected.PARTY_START
 local POKEMON_SIZE = selected.POKEMON_SIZE
